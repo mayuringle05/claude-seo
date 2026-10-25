@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **An og:image query no longer sets the page encoding.** `charset=` inside
+  another meta attribute was treated as `<meta charset>`. A later
+  `<meta charset="utf-8">` was ignored, so a canonical
+  `https://example.com/café` was decoded as `https://example.com/cafÃ©`.
+  A real `charset` attribute, or an `http-equiv="content-type"` pragma,
+  is still the encoding.
+
 ## [2.5.0] - 2026-10-22
 
 Security and accuracy fixes from a full audit, and Claude Desktop installs again.
