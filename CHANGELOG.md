@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`/seo` keeps the command word (#342).** The hub skill said `/seo $1 $2`.
+  Claude Code indexes arguments from 0 (`$0` is the first word, `$1` the
+  second; https://code.claude.com/docs/en/skills), so `/seo audit <url>`
+  loaded as `/seo <url> $2` and dropped `audit`. The line now uses
+  `$ARGUMENTS`, which is the full input.
+
 ## [2.5.0] - 2026-10-22
 
 Security and accuracy fixes from a full audit, and Claude Desktop installs again.
