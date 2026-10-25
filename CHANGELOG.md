@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Sitemap discovery keeps a robots.txt URL when a comment follows it.**
+  `Sitemap: https://example.com/products.xml # catalog` was dropped, so that
+  URL was never fetched and only the common paths were checked. A `#` comment
+  runs to the end of the line (Google's robots.txt syntax, and RFC 9309), and
+  a leading UTF-8 BOM is not part of the first field.
+
 ## [2.5.0] - 2026-10-22
 
 Security and accuracy fixes from a full audit, and Claude Desktop installs again.
