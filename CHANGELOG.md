@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`parse_html.py` keeps `@context` when it flattens a JSON-LD `@graph`
+  (#333).** Members were emitted with `@type` and no `@context`, so a valid
+  graph was reported as broken. The document context is copied onto members
+  that do not set their own. `seo-schema` no longer asks for `@type` on the
+  `@graph` container.
+
 ## [2.5.0] - 2026-10-22
 
 Security and accuracy fixes from a full audit, and Claude Desktop installs again.
