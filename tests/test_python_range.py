@@ -136,6 +136,49 @@ def test_launcher_names_the_range_when_nothing_fits(tmp_path) -> None:
 
 
 @posix_only
+def test_launcher_ignores_pythonpy_on_non_windows(tmp_path) -> None:
+    """Debian pythonpy is also named `py` and accepts `-c`, then rejects the script (#343)."""
+    bin_dir = _stub_dir(tmp_path, {"python3": "3.12"})
+    py = bin_dir / "py"
+    py.write_text(
+        "#!/bin/sh\n"
+        'for arg in "$@"; do\n'
+        '  if [ "$arg" = "-c" ]; then echo 3.12; exit 0; fi\n'
+        "done\n"
+        'echo "py: error: unrecognized arguments: $*" >&2\n'
+        "exit 2\n",
+        encoding="utf-8",
+    )
+    py.chmod(0o755)
+    uname = bin_dir / "uname"
+    uname.write_text("#!/bin/sh\necho Linux\n", encoding="utf-8")
+    uname.chmod(0o755)
+    result = _launch(bin_dir)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "picked python3 runtime.py"
+
+
+@posix_only
+def test_launcher_still_uses_py_on_windows_shells(tmp_path) -> None:
+    bin_dir = _stub_dir(tmp_path, {"python3": "3.15"})
+    py = bin_dir / "py"
+    py.write_text(
+        "#!/bin/sh\n"
+        'if [ "$1" = "-3" ] && [ "$2" = "-c" ]; then echo 3.12; exit 0; fi\n'
+        'if [ "$1" = "-3" ]; then echo "picked py $(basename "$2")"; exit 0; fi\n'
+        "exit 1\n",
+        encoding="utf-8",
+    )
+    py.chmod(0o755)
+    uname = bin_dir / "uname"
+    uname.write_text("#!/bin/sh\necho MINGW64_NT-10.0-22631\n", encoding="utf-8")
+    uname.chmod(0o755)
+    result = _launch(bin_dir)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "picked py runtime.py"
+
+
+@posix_only
 def test_launcher_rejects_an_unsupported_override(tmp_path) -> None:
     bin_dir = _stub_dir(tmp_path, {"python3": "3.12", "py315": "3.15"})
     result = _launch(bin_dir, CLAUDE_SEO_PYTHON=str(bin_dir / "py315"))
