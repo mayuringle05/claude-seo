@@ -61,12 +61,26 @@ try_python() {
 }
 
 script_args=("$@")
-try_python py -3 || true
+
+# `py -3` is the Windows Python launcher (Git Bash, MSYS, Cygwin). On other
+# systems `py` may be an unrelated tool. Debian/Ubuntu pythonpy accepts `-c`
+# and exits 0, so a version probe passes, then `exec py -3 runtime.py` fails
+# (#343). The Unix Python launcher is uncommon; python3 / python3.N cover it.
+windows_py=0
+case "$(uname -s 2>/dev/null || true)" in
+    MINGW*|MSYS*|CYGWIN*) windows_py=1 ;;
+esac
+try_py() {
+    [[ "${windows_py}" == 1 ]] || return 1
+    try_python py "$@"
+}
+
+try_py -3 || true
 try_python python3 || true
 try_python python || true
 minor=${max_minor}
 while (( minor >= min_minor )); do
-    try_python py "-3.${minor}" || true
+    try_py "-3.${minor}" || true
     try_python "python3.${minor}" || true
     minor=$(( minor - 1 ))
 done

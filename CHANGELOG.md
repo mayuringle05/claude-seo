@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The bash launcher no longer treats a non-Windows `py` as the Python
+  launcher (#343).** On Debian and Ubuntu, `py` can be pythonpy. It accepts
+  `-c` and then rejects `runtime.py`, so `/seo setup` failed even when
+  `python3` was fine. `py -3` is now tried only under Git Bash, MSYS, and
+  Cygwin.
+
 ## [2.5.0] - 2026-10-22
 
 Security and accuracy fixes from a full audit, and Claude Desktop installs again.
