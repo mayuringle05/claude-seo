@@ -188,6 +188,17 @@ def validate_jsonld(content: str, filepath: str = "") -> List[str]:
     return errors
 
 
+def _jsonld_type_names(schema_type: Any) -> list[str]:
+    """String names from a JSON-LD ``@type``.
+
+    Schema.org allows one type or a list of types on the same node. A list is
+    not hashable, so using it as a dict key crashes the hook and drops every
+    other finding for the file.
+    """
+    values = schema_type if isinstance(schema_type, list) else [schema_type]
+    return [name for name in values if isinstance(name, str) and name]
+
+
 def _validate_schema_object(
     obj: dict[str, Any], block_num: int, *, inherited_context: bool = False
 ) -> List[str]:
@@ -217,8 +228,8 @@ def _validate_schema_object(
     for placeholder in BARE_PLACEHOLDER_RE.findall(text):
         errors.append(f"{prefix}: Contains placeholder text: {placeholder}")
 
-    # Check for deprecated types
-    schema_type = obj.get("@type", "")
+    # Check for deprecated types. @type may be a string or a list of strings.
+    schema_types = _jsonld_type_names(obj.get("@type", ""))
     deprecated = {
         "HowTo": "deprecated September 2023",
         "SpecialAnnouncement": "deprecated July 31, 2025",
@@ -228,16 +239,20 @@ def _validate_schema_object(
         "ClaimReview": "retired June 2025; fact-check rich results discontinued",
         "VehicleListing": "retired June 2025; vehicle listing structured data discontinued",
     }
-    if schema_type in deprecated:
-        errors.append(f"{prefix}: @type '{schema_type}' is {deprecated[schema_type]}")
+    for schema_type in schema_types:
+        if schema_type in deprecated:
+            errors.append(f"{prefix}: @type '{schema_type}' is {deprecated[schema_type]}")
 
     # Check for restricted types used incorrectly.
     # FAQPage is intentionally NOT flagged: Google retired FAQ rich results for
     # all sites (May 7, 2026), but FAQPage remains a valid Schema.org type.
     # This project makes no claim of a confirmed AI or ranking benefit.
     restricted: dict = {}
-    if schema_type in restricted:
-        errors.append(f"{prefix}: @type '{schema_type}' is {restricted[schema_type]}; verify site qualifies")
+    for schema_type in schema_types:
+        if schema_type in restricted:
+            errors.append(
+                f"{prefix}: @type '{schema_type}' is {restricted[schema_type]}; verify site qualifies"
+            )
 
     if "@graph" in obj:
         if not isinstance(graph, list):
