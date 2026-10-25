@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **GBP verified status uses DataForSEO `is_claimed` (#334).** The checklist
+  said verification is not exposed and could be inferred from profile
+  completeness or a Maps listing. `is_claimed` is that field. The 50-point
+  scale is unchanged. An absent value is Unknown (manual check required).
+
 ## [2.5.0] - 2026-10-22
 
 Security and accuracy fixes from a full audit, and Claude Desktop installs again.
