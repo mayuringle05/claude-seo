@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A shorter filler phrase no longer scores inside a longer one.**
+  `let's dive into` also matched `let's dive in`, so one sentence was two
+  hits. On a 320-token page that moved `filler_score` from 25 to 50,
+  `overall_quality` from 47 to 41, and raised the filler flag.
+
 ## [2.5.0] - 2026-10-22
 
 Security and accuracy fixes from a full audit, and Claude Desktop installs again.
