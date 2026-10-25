@@ -223,10 +223,16 @@ def parse_html(html: str, base_url: Optional[str] = None) -> dict:
     for script in soup.find_all("script", type="application/ld+json"):
         try:
             schema_data = json.loads(script.string)
-            # Flatten @graph containers so each @type is a separate entry
+            # Flatten @graph containers so each @type is a separate entry.
+            # @context belongs to the document. Copy it onto members that do
+            # not declare their own, or every node looks like a block with no
+            # context (#333).
             if isinstance(schema_data, dict) and "@graph" in schema_data:
+                inherited_context = schema_data.get("@context")
                 for item in schema_data["@graph"]:
                     if isinstance(item, dict):
+                        if inherited_context is not None and "@context" not in item:
+                            item = {"@context": inherited_context, **item}
                         result["schema"].append(item)
             elif isinstance(schema_data, list):
                 for item in schema_data:
