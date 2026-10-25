@@ -61,6 +61,54 @@ def test_deprecated_type_still_blocks(tmp_path):
     assert _run(tmp_path, "ClaimReview") == 2
 
 
+def test_list_valued_type_does_not_crash(tmp_path: Path) -> None:
+    """JSON-LD allows several types. A list must not raise TypeError (#357)."""
+    payload = {
+        "@context": "https://schema.org",
+        "@type": ["LocalBusiness", "FinancialService"],
+        "name": "Example Advisory",
+    }
+    result = _run_payload(tmp_path, payload, capture_output=True, encoding="utf-8")
+    assert result.returncode != 1
+    assert "TypeError" not in result.stderr
+    assert _clean(result)
+
+
+def test_list_valued_type_inside_graph_does_not_crash(tmp_path: Path) -> None:
+    payload = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": ["LocalBusiness", "FinancialService"], "name": "Example Advisory"},
+        ],
+    }
+    result = _run_payload(tmp_path, payload, capture_output=True, encoding="utf-8")
+    assert "TypeError" not in result.stderr
+    assert _clean(result)
+
+
+def test_deprecated_type_inside_a_list_still_blocks(tmp_path: Path) -> None:
+    payload = {
+        "@context": "https://schema.org",
+        "@type": ["HowTo", "Article"],
+        "name": "Steps",
+    }
+    result = _run_payload(tmp_path, payload, capture_output=True, encoding="utf-8")
+    assert result.returncode == 2
+    assert "@type 'HowTo' is deprecated" in result.stderr
+    assert "@type 'Article'" not in result.stderr
+
+
+def test_non_string_type_in_a_list_is_not_a_dict_key(tmp_path: Path) -> None:
+    payload = {
+        "@context": "https://schema.org",
+        "@type": [{"@id": "https://schema.org/Thing"}, "Article"],
+        "name": "Example",
+    }
+    result = _run_payload(tmp_path, payload, capture_output=True, encoding="utf-8")
+    assert "TypeError" not in result.stderr
+    assert _clean(result)
+
+
 def test_valid_top_level_graph_does_not_require_container_type(tmp_path: Path) -> None:
     payload = {
         "@context": "https://schema.org",

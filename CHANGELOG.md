@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **JSON-LD hook accepts a list `@type` (#357).** A node typed as
+  `["LocalBusiness", "FinancialService"]` crashed the PostToolUse hook with
+  `TypeError` before any other finding was reported. Each string type is
+  checked on its own, including members of `@graph`.
+
 ## [2.5.0] - 2026-10-22
 
 Security and accuracy fixes from a full audit, and Claude Desktop installs again.
