@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `commoncrawl_graph.py --release` now rejects a value with a trailing newline.
+  The check used `$`, which also matches before a final `\n`, so `x\n` passed
+  and could make the cache key and the download URL disagree.
+
 ## [2.5.0] - 2026-10-22
 
 Security and accuracy fixes from a full audit, and Claude Desktop installs again.
