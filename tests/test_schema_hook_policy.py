@@ -93,6 +93,25 @@ def test_deprecated_graph_member_still_blocks(tmp_path: Path) -> None:
     assert _run_payload(tmp_path, payload).returncode == 2
 
 
+def test_schema_type_array_is_validated_without_crashing(tmp_path: Path) -> None:
+    payload = {
+        "@context": "https://schema.org",
+        "@type": ["Organization", "LocalBusiness"],
+        "name": "Example",
+    }
+    result = _run_payload(tmp_path, payload, capture_output=True, encoding="utf-8")
+    assert _clean(result)
+
+
+def test_deprecated_type_inside_array_is_still_blocked(tmp_path: Path) -> None:
+    payload = {
+        "@context": "https://schema.org",
+        "@type": ["Organization", "HowTo"],
+        "name": "Example",
+    }
+    assert _run_payload(tmp_path, payload).returncode == 2
+
+
 def test_non_object_graph_members_are_reported_without_crashing(tmp_path: Path) -> None:
     payload = {
         "@context": "https://schema.org",

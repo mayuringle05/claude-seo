@@ -217,8 +217,10 @@ def _validate_schema_object(
     for placeholder in BARE_PLACEHOLDER_RE.findall(text):
         errors.append(f"{prefix}: Contains placeholder text: {placeholder}")
 
-    # Check for deprecated types
-    schema_type = obj.get("@type", "")
+    # Check for deprecated types. Schema.org permits multiple values in @type.
+    raw_schema_type = obj.get("@type", "")
+    schema_types = raw_schema_type if isinstance(raw_schema_type, list) else [raw_schema_type]
+    schema_types = [schema_type for schema_type in schema_types if isinstance(schema_type, str)]
     deprecated = {
         "HowTo": "deprecated September 2023",
         "SpecialAnnouncement": "deprecated July 31, 2025",
@@ -228,16 +230,20 @@ def _validate_schema_object(
         "ClaimReview": "retired June 2025; fact-check rich results discontinued",
         "VehicleListing": "retired June 2025; vehicle listing structured data discontinued",
     }
-    if schema_type in deprecated:
-        errors.append(f"{prefix}: @type '{schema_type}' is {deprecated[schema_type]}")
+    for schema_type in schema_types:
+        if schema_type in deprecated:
+            errors.append(f"{prefix}: @type '{schema_type}' is {deprecated[schema_type]}")
 
     # Check for restricted types used incorrectly.
     # FAQPage is intentionally NOT flagged: Google retired FAQ rich results for
     # all sites (May 7, 2026), but FAQPage remains a valid Schema.org type.
     # This project makes no claim of a confirmed AI or ranking benefit.
     restricted: dict = {}
-    if schema_type in restricted:
-        errors.append(f"{prefix}: @type '{schema_type}' is {restricted[schema_type]}; verify site qualifies")
+    for schema_type in schema_types:
+        if schema_type in restricted:
+            errors.append(
+                f"{prefix}: @type '{schema_type}' is {restricted[schema_type]}; verify site qualifies"
+            )
 
     if "@graph" in obj:
         if not isinstance(graph, list):
